@@ -31,20 +31,6 @@ create function find_leaf_policies_with_root_policies() returns table (
 $$ language sql;
 
 
-
-create function find_leaf_partitions_with_mismatching_policies_to_root(schema_name text) returns table(
-	leaf_table regclass,
-	root_table regclass
-) as $$
-	select leaf_table, root_localoid from
-		find_leaf_policies_with_root_policies() as all_leaves
-		inner join pg_namespace on pg_namespace.nspname = $1
-		inner join pg_class on (pg_class.oid = leaf_table and pg_class.relnamespace = pg_namespace.oid)
-		where coalesce(all_leaves.root_attrnums, cast('{}' as smallint[])) !=
-			coalesce(all_leaves.leaf_attrnums, cast('{}' as smallint[]));
-$$ language sql;
-
-
 create function policy(table_oid regclass) returns table(attnum smallint) as $$
 	select unnest(attrnums) from gp_distribution_policy where localoid = $1;
 $$ language sql;
@@ -57,3 +43,18 @@ create function find_distribution_for_table(some_table regclass) returns name[] 
 		) t(attnum, row_number) on pg_attribute.attnum = t.attnum
 		where attrelid = $1;
 $$ language sql;
+
+
+create function find_leaf_partitions_with_mismatching_policies_to_root(schema_name text) returns table(
+	leaf_table regclass,
+	root_table regclass
+) as $$
+	select leaf_table, root_localoid from
+		find_leaf_policies_with_root_policies() as all_leaves
+		inner join pg_namespace on pg_namespace.nspname = $1
+		inner join pg_class on (pg_class.oid = leaf_table and pg_class.relnamespace = pg_namespace.oid)
+		where find_distribution_for_table(leaf_table)
+			IS DISTINCT FROM find_distribution_for_table(root_localoid)
+$$ language sql;
+
+
