@@ -296,5 +296,5 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         self.assertEqual([], rows)
 
-    # def test_returns_tables_that_have_unique_indexes_ordered_differently_than_distribution_key(self):
-    #     self.fail("not implemented")
+    def test_returns_tables_that_have_unique_indexes_ordered_differently_than_distribution_key(self):
+        self.fail("not implemented")
