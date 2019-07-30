@@ -62,10 +62,10 @@ class PartitionCheckTest(unittest.TestCase):
         """)
 
     def import_partition_check_library(self):
-        import os
         script_dir = os.path.dirname(__file__)
         library_path = os.path.join(script_dir, "..", "partition-check.sql")
-        self.db.execute(open(library_path).read())
+        with open(library_path) as file:
+            self.db.execute(file.read())
 
     def alter_leaf_node_to_have_a_different_policy(self):
         self.db.execute("""
