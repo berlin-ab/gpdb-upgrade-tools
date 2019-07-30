@@ -1,12 +1,17 @@
 import unittest
 import sqlalchemy
+import os
 
 
 class PartitionCheckTest(unittest.TestCase):
     def setup_database_connection(self):
-        from sqlalchemy import create_engine
-        db_string = "postgresql://localhost:5000/adamberlin"
-        self.engine = create_engine(db_string)
+        port = os.getenv("PGPORT")
+
+        db_string = "postgresql://localhost:{port}/postgres".format(
+            port=port,
+        )
+
+        self.engine = sqlalchemy.create_engine(db_string)
         self.db = self.engine.connect()
 
     def create_self_contained_schema(self, schema_name):

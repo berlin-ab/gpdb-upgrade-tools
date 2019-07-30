@@ -56,5 +56,3 @@ create function find_leaf_partitions_with_mismatching_policies_to_root(schema_na
 		where find_distribution_for_table(leaf_table)
 			IS DISTINCT FROM find_distribution_for_table(root_localoid)
 $$ language sql;
-
-
