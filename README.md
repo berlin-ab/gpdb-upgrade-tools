@@ -15,4 +15,8 @@
 
 ### Testing
 
+```bash
+    export PGPORT=15432
+
     ./scripts/test
+```
