@@ -1,4 +1,23 @@
 #!/usr/bin/env bash
 
+set -e
+
+echo "using python version:"
+which python
+which pip
+python --version
+
+echo ""
+echo "Install dependencies."
 pip install -r test/requirements.txt
+echo "done."
+
+
+echo ""
+echo "cleanup cached files:"
+find . -name *.pyc -delete -print
+echo "done."
+
+echo ""
+echo "Run tests."
 python -m unittest test/*.py
