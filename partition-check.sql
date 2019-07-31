@@ -63,19 +63,19 @@ create function gpdb_partition_check.find_partitions_in_namespace(schema_name te
 $$ language sql;
 
 
-create function gpdb_partition_check.get_attributes_for_primary_key_constraint_on_table(table_oid regclass) returns table (attnum smallint, row_number bigint) as $$
+create function gpdb_partition_check.get_attributes_for_constraint_on_table(table_oid regclass) returns table (attnum smallint, row_number bigint) as $$
     select attnum, row_number() over() from (
         select unnest(conkey)
         from pg_constraint
         where conrelid = $1
-        and contype = 'p'
+        and contype in ('p', 'u')
     ) constraint_keys(attnum);
 $$ language sql;
 
 
-create function gpdb_partition_check.find_primary_key_constraint_for(table_oid regclass) returns name[] as $$
+create function gpdb_partition_check.find_constraint_for(table_oid regclass) returns name[] as $$
 	select array_agg(attname order by row_number) attributes
-		from pg_attribute join gpdb_partition_check.get_attributes_for_primary_key_constraint_on_table($1) t(attnum, row_number)  on pg_attribute.attnum = t.attnum
+		from pg_attribute join gpdb_partition_check.get_attributes_for_constraint_on_table($1) t(attnum, row_number)  on pg_attribute.attnum = t.attnum
 		where attrelid = $1;
 $$ language sql;
 
@@ -109,7 +109,7 @@ create function gpdb_partition_check.find_conflicting_leaf_partitions(schema_nam
 	root_table regclass
 ) as $$
 	select leaf_table, root_table from gpdb_partition_check.find_partitions_in_namespace($1)
-		inner join pg_constraint on pg_constraint.conrelid = leaf_table and contype = 'p'
-		where gpdb_partition_check.find_primary_key_constraint_for(leaf_table)
+		inner join pg_constraint on pg_constraint.conrelid = leaf_table and contype in ('p', 'u')
+		where gpdb_partition_check.find_constraint_for(leaf_table)
 			!= gpdb_partition_check.find_distribution_for_table(root_table);
 $$ language sql;

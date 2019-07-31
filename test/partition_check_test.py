@@ -291,10 +291,32 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select leaf_table, root_table 
-                from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('myschema')
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)
 
     def test_returns_tables_that_have_unique_indexes_ordered_differently_than_distribution_key(self):
-        self.fail("not implemented")
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+
+            create table example_table (a int, b int)
+                distributed by (a, b)
+                partition by range(a) (start (1) end (2) every (1));
+
+            alter table example_table add constraint example_table_uniq unique (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select leaf_table, root_table
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
+        """).fetchall()
+
+        self.assertEqual(
+            [('example_table_1_prt_1', 'example_table')],
+            rows
+        )
