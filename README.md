@@ -29,7 +29,7 @@ Identify tables with known problems:
     select * from gpdb_partition_check.find_leaf_partitions_with_mismatching_policies_to_root('some_schema_name');
 
     -- search for partition leaf tables that have a primary key that conflicts with the distribution key
-    select * from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('some_schema_name');
+    select * from gpdb_partition_check.find_conflicting_leaf_partitions('some_schema_name');
 ```
     
 ## Developers

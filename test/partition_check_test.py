@@ -196,7 +196,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select leaf_table, root_table 
-                from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('myschema')
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
         """).fetchall()
 
 
@@ -222,7 +222,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select leaf_table, root_table 
-                from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('myschema')
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
         """).fetchall()
 
 
@@ -249,7 +249,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select leaf_table, root_table 
-                from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('myschema')
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
         """).fetchall()
 
         self.assertEqual(rows, [])
@@ -269,7 +269,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select leaf_table, root_table 
-                from gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints('myschema')
+                from gpdb_partition_check.find_conflicting_leaf_partitions('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)

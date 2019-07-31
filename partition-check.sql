@@ -102,9 +102,9 @@ $$ language sql;
 
 
 --
--- find_leaf_parititions_with_conflicting_distribution_keys_to_constraints:
+-- find_conflicting_leaf_partitions:
 --
-create function gpdb_partition_check.find_leaf_parititions_with_conflicting_distribution_keys_to_constraints(schema_name text) returns table (
+create function gpdb_partition_check.find_conflicting_leaf_partitions(schema_name text) returns table (
 	leaf_table regclass,
 	root_table regclass
 ) as $$
