@@ -63,20 +63,59 @@ create function gpdb_partition_check.find_partitions_in_namespace(schema_name te
 $$ language sql;
 
 
-create function gpdb_partition_check.get_attributes_for_constraint_on_table(table_oid regclass) returns table (attnum smallint, row_number bigint) as $$
-    select attnum, row_number() over() from (
-        select unnest(conkey)
+create function gpdb_partition_check.get_attributes_for_constraint_on_table(table_oid regclass) returns table (attnum smallint, row_number bigint, constraint_oid oid) as $$
+    select attnum, row_number() over(), oid from (
+        select unnest(conkey), oid
         from pg_constraint
         where conrelid = $1
         and contype in ('p', 'u')
-    ) constraint_keys(attnum);
+    ) constraint_keys(attnum, oid);
 $$ language sql;
 
 
-create function gpdb_partition_check.find_constraint_for(table_oid regclass) returns name[] as $$
+create function gpdb_partition_check.find_constraints_for(table_oid regclass) returns table(constraint_attributes name[]) as $$
 	select array_agg(attname order by row_number) attributes
-		from pg_attribute join gpdb_partition_check.get_attributes_for_constraint_on_table($1) t(attnum, row_number)  on pg_attribute.attnum = t.attnum
-		where attrelid = $1;
+		from pg_attribute join gpdb_partition_check.get_attributes_for_constraint_on_table($1) t(attnum, row_number, constraint_oid)
+        on pg_attribute.attnum = t.attnum
+		where attrelid = $1
+        group by constraint_oid;
+$$ language sql;
+
+
+create function gpdb_partition_check.distribution_attributes_conflict_with_constraint_attributes(
+    constraint_attributes name[],
+    distribution_attributes name[]) returns boolean as $$
+declare
+    i int;
+    one_dimensional_array int = 1;
+begin
+    if array_length(constraint_attributes, one_dimensional_array) IS NULL then
+        return false;
+    end if;
+
+    for i in 1 .. array_length(constraint_attributes, one_dimensional_array)
+        loop
+            if constraint_attributes[i] != distribution_attributes[i] then
+                return true;
+            end if;
+        end loop;
+
+    return false;
+end;
+$$ language plpgsql;
+
+
+create function gpdb_partition_check.distribution_conflicts_with_constraints(
+    leaf_table regclass,
+    root_table regclass
+) returns boolean as $$
+    select true = any(
+        select gpdb_partition_check.distribution_attributes_conflict_with_constraint_attributes(
+            constraint_attributes,
+            gpdb_partition_check.find_distribution_for_table($2)
+        )
+        from gpdb_partition_check.find_constraints_for($1) found_constraints(constraint_attributes)
+    );
 $$ language sql;
 
 
@@ -108,8 +147,7 @@ create function gpdb_partition_check.find_conflicting_leaf_partitions(schema_nam
 	leaf_table regclass,
 	root_table regclass
 ) as $$
-	select leaf_table, root_table from gpdb_partition_check.find_partitions_in_namespace($1)
-		inner join pg_constraint on pg_constraint.conrelid = leaf_table and contype in ('p', 'u')
-		where gpdb_partition_check.find_constraint_for(leaf_table)
-			!= gpdb_partition_check.find_distribution_for_table(root_table);
+    select leaf_table, root_table from gpdb_partition_check.find_partitions_in_namespace($1)
+        where gpdb_partition_check.distribution_conflicts_with_constraints(leaf_table, root_table);
 $$ language sql;
+
