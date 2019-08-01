@@ -172,7 +172,7 @@ class MismatchingLeafNodePartitionCheckTest(unittest.TestCase):
         self.assertEqual(rows, [])
 
 
-class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
+class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
     def setUp(self):
         self.test_helpers = TestHelpers()
 
@@ -396,5 +396,206 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         self.assertEqual(
             [('example_table_1_prt_1', 'example_table')],
+            rows
+        )
+
+
+class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
+    def setUp(self):
+        self.test_helpers = TestHelpers()
+
+    def tearDown(self):
+        self.test_helpers.tearDown()
+
+    def test_returns_tables_that_have_primary_keys_that_are_ordered_differently_than_distribution_key(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+            
+            create table example_table (a int, b int);
+            
+            alter table example_table add constraint example_table_pkey primary key (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+
+        self.assertEqual(
+            [('example_table',)],
+            rows
+        )
+
+    def test_returns_any_tables_that_have_primary_keys_that_are_ordered_differently_than_distribution_key(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists some_other_example_table;
+            
+            create table some_other_example_table (a int, b int);
+                
+            alter table some_other_example_table add constraint some_other_example_table_pkey primary key (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+
+        self.assertEqual(
+            [('some_other_example_table',)],
+            rows
+        )
+
+    def test_it_does_not_return_tables_that_are_not_in_the_given_schema(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.create_schema('myotherschema')
+        self.test_helpers.use_schema('myotherschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+            
+            create table example_table (a int, b int);
+                
+            alter table example_table add constraint example_table_pkey primary key (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual(rows, [])
+
+    def test_it_does_not_return_tables_that_do_not_conflict(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+            
+            create table example_table (a int, b int);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual([], rows)
+
+    def test_it_does_not_return_tables_that_do_not_conflict_with_primary_keys(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+            
+            create table example_table (a int, b int);
+
+            alter table example_table add constraint example_table_pkey primary key (a, b);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual([], rows)
+
+    def test_returns_tables_that_have_unique_indexes_ordered_differently_than_distribution_key(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+
+            create table example_table (a int, b int);
+
+            alter table example_table add constraint example_table_uniq unique (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual(
+            [('example_table',)],
+            rows
+        )
+
+    def test_returns_tables_that_have_a_distribution_key_that_is_not_a_left_subset_of_a_unique_index(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+
+            create table example_table (a int, b int, c int);
+
+            alter table example_table add constraint example_table_uniq primary key (a, b);
+            alter table example_table set with (reorganize=true) distributed by (b);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual(
+            [('example_table',)],
+            rows
+        )
+
+    def test_does_not_return_tables_that_have_a_distribution_key_that_is_a_left_subset_of_a_unique_index(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+
+            create table example_table (a int, b int, c int);
+
+            alter table example_table add constraint example_table_uniq unique (a, b);
+            alter table example_table set with (reorganize=true) distributed by (a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual(
+            [],
+            rows
+        )
+
+    def test_it_returns_conflicts_when_there_are_multiple_unique_constraints(self):
+        self.test_helpers.create_schema('myschema')
+        self.test_helpers.use_schema('myschema')
+        self.test_helpers.import_library()
+
+        self.test_helpers.execute("""
+            drop table if exists example_table;
+
+            create table example_table (a int, b int, c int);
+
+            alter table example_table add constraint example_table_uniq unique (a, b);
+            alter table example_table add constraint example_table_pkey primary key (b, a);
+        """)
+
+        rows = self.test_helpers.execute("""
+            select table_name from gpdb_partition_check.find_conflicting_tables('myschema')
+        """).fetchall()
+
+        self.assertEqual(
+            [('example_table',)],
             rows
         )

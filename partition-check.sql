@@ -148,6 +148,15 @@ create function gpdb_partition_check.find_conflicting_leaf_partitions(schema_nam
 	root_table regclass
 ) as $$
     select leaf_table, root_table from gpdb_partition_check.find_partitions_in_namespace($1)
-        where gpdb_partition_check.distribution_conflicts_with_constraints(leaf_table, root_table);
+        where gpdb_partition_check.distribution_conflicts_with_constraints(leaf_table, root_table)
+$$ language sql;
+
+
+create function gpdb_partition_check.find_conflicting_tables(schema_name text) returns table (
+    table_name regclass
+) as $$
+    select relname::text::regclass
+        from pg_class where relnamespace = gpdb_partition_check.get_namespace_oid($1)
+        and gpdb_partition_check.distribution_conflicts_with_constraints(relname::text::regclass, relname::text::regclass)
 $$ language sql;
 
