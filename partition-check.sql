@@ -89,11 +89,11 @@ declare
     i int;
     one_dimensional_array int = 1;
 begin
-    if array_length(constraint_attributes, one_dimensional_array) IS NULL then
+    if array_upper(constraint_attributes, one_dimensional_array) IS NULL then
         return false;
     end if;
 
-    for i in 1 .. array_length(constraint_attributes, one_dimensional_array)
+    for i in 1 .. array_upper(constraint_attributes, one_dimensional_array)
         loop
             if constraint_attributes[i] != distribution_attributes[i] then
                 return true;
