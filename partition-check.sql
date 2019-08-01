@@ -1,4 +1,4 @@
-drop schema gpdb_distribution_check cascade;
+drop schema if exists gpdb_distribution_check cascade;
 create schema gpdb_distribution_check;
 
 
