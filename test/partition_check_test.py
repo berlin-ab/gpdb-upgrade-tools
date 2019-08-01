@@ -133,7 +133,7 @@ class MismatchingLeafNodePartitionCheckTest(unittest.TestCase):
         self.alter_leaf_node_to_have_a_different_policy()
 
         rows = self.test_helpers.execute("""
-            select * from gpdb_partition_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
+            select * from gpdb_distribution_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
         """).fetchall()
 
         self.assertEqual(len(rows), 1)
@@ -152,7 +152,7 @@ class MismatchingLeafNodePartitionCheckTest(unittest.TestCase):
         self.alter_leaf_node_to_have_a_different_policy()
 
         rows = self.test_helpers.execute("""
-            select * from gpdb_partition_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
+            select * from gpdb_distribution_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
         """).fetchall()
 
         self.assertEqual(len(rows), 0)
@@ -166,7 +166,7 @@ class MismatchingLeafNodePartitionCheckTest(unittest.TestCase):
         self.exchange_a_valid_table_into_the_partition_hierarchy_with_alternate_attribute_ordering()
 
         rows = self.test_helpers.execute("""
-            select * from gpdb_partition_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
+            select * from gpdb_distribution_check.find_leaf_partitions_with_mismatching_policies_to_root('myschema');
         """).fetchall()
 
         self.assertEqual(rows, [])
@@ -196,7 +196,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name 
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
 
@@ -222,7 +222,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name 
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
 
@@ -249,7 +249,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name 
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(rows, [])
@@ -269,7 +269,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name 
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)
@@ -291,7 +291,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name 
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)
@@ -313,7 +313,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -339,7 +339,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -365,7 +365,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -391,7 +391,7 @@ class ConflictingPartitionDistributionKeyWithUniqueIndex(unittest.TestCase):
 
         rows = self.test_helpers.execute("""
             select table_name
-                from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+                from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -421,7 +421,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
 
@@ -444,7 +444,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
 
@@ -468,7 +468,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(rows, [])
@@ -485,7 +485,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)
@@ -504,7 +504,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual([], rows)
@@ -523,7 +523,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -546,7 +546,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -569,7 +569,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
@@ -592,7 +592,7 @@ class ConflictingDistributionKeyWithUniqueIndex(unittest.TestCase):
         """)
 
         rows = self.test_helpers.execute("""
-            select table_name from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
+            select table_name from gpdb_distribution_check.find_tables_conflicting_uniq_const_to_dist_keys('myschema')
         """).fetchall()
 
         self.assertEqual(
