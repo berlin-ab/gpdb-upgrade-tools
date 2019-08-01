@@ -28,8 +28,8 @@ Identify tables with known problems:
     -- search for partition leaf tables that do not match their root's distribution policy
     select * from gpdb_partition_check.find_leaf_partitions_with_mismatching_policies_to_root('some_schema_name');
 
-    -- search for partition leaf tables that have a primary key that conflicts with the distribution key
-    select * from gpdb_partition_check.find_conflicting_leaf_partitions('some_schema_name');
+    -- search for tables that have a distribution key that is not a left-subset of its unique constraints
+    select * from gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys('some_schema_name');
 ```
     
 ## Developers

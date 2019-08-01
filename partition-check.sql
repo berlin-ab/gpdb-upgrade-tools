@@ -141,18 +141,11 @@ $$ language sql;
 
 
 --
--- find_conflicting_leaf_partitions:
+-- gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys
 --
-create function gpdb_partition_check.find_conflicting_leaf_partitions(schema_name text) returns table (
-	leaf_table regclass,
-	root_table regclass
-) as $$
-    select leaf_table, root_table from gpdb_partition_check.find_partitions_in_namespace($1)
-        where gpdb_partition_check.distribution_conflicts_with_constraints(leaf_table, root_table)
-$$ language sql;
-
-
-create function gpdb_partition_check.find_conflicting_tables(schema_name text) returns table (
+-- Find all tables that have distribution keys that are not left-subsets of their unique constraints
+--
+create function gpdb_partition_check.find_tables_conflicting_uniq_const_to_dist_keys(schema_name text) returns table (
     table_name regclass
 ) as $$
     select relname::text::regclass
